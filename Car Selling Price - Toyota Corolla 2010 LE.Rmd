@@ -1,0 +1,335 @@
+---
+title: "Analysis - Car Selling Price"
+output: 
+  html_document:
+    theme: cerulean
+    code_folding: hide
+---
+
+*Select a tab to start.*
+
+<!-- Add tabs -->
+
+```{=html}
+<script>
+function openTab(evt, tabName) {
+  var i, x, tablinks;
+  x = document.getElementsByClassName("tab");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+  tablinks = document.getElementsByClassName("tablink");
+  for (i = 0; i < x.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+  document.getElementById(tabName).style.display = "block";
+  evt.currentTarget.className += " active";
+}
+</script>
+```
+```{=html}
+<style>
+/* Style for tabs */
+.tablink {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #4CAF50; /* Green background color */
+  color: white; /* Text color */
+  cursor: pointer;
+  border: none; /* Remove borders */
+  border-radius: 5px; /* Rounded corners */
+  margin-right: 10px; /* Spacing between tabs */
+}
+
+.tablink:hover {
+  background-color: #45a049; /* Darker green on hover */
+}
+
+.active {
+  background-color: #45a049; /* Highlight the active tab */
+}
+
+/* Style for tab content */
+.tab {
+  display: none;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-top: none;
+}
+</style>
+```
+::: {.tablink onclick="openTab(event, 'Conclusion')"}
+Conclusion
+:::
+
+::: {.tablink onclick="openTab(event, 'Hypothesis')"}
+Hypothesis
+:::
+
+::: {.tablink onclick="openTab(event, 'ModelSummary')"}
+Model Summary
+:::
+
+::: {.tablink onclick="openTab(event, 'Interpretation')"}
+Interpretation
+:::
+
+```{r setup, include=FALSE, message=FALSE, warning=FALSE}
+library(readr)
+library(mosaicData)
+library(car)
+library(ggplot2)
+library(tidyverse)
+library(MASS)
+library(dplyr)
+library(pander)
+mycar <- read_csv("ToyotaCorolla2010LE.csv")
+View(mycar)
+```
+
+::: {#Conclusion .tab}
+## Conclusion
+
+*In summary, the analysis reveals the following significant findings at a significance level of α = 0.05:*
+
+**Hypothesis Testing Outcome:**
+
+The hypothesis testing conducted in this analysis provides strong evidence to support the alternative hypothesis ($H_a$) that the mileage of a vehicle at the time of purchase significantly affects its selling price. This conclusion is based on the highly statistically significant p-value associated with the "Mileage" coefficient.
+
+**Model Fit and Interpretation:**
+
+The linear regression model, with mileage as the predictor variable, explains approximately 65.06% of the variability in the vehicle's selling price (R-squared value).
+
+The estimated coefficient for "Mileage" suggests that, on average, as the mileage of a vehicle increases, its price tends to decrease. This finding is supported by the negative coefficient.
+
+**Choice of Y Transformation:**
+
+After exploring various Y transformations, the analysis identifies the log transformation (logarithm of the price) as the most suitable transformation for modeling the relationship between mileage and price. This choice is supported by both visual inspection and statistical analysis, including the Box-Cox transformation analysis, which suggests that a lambda value close to zero is appropriate.
+
+**Practical Implications:**
+
+Theoretically, it is possible to sell the vehicle at its current mileage for a profit of approximately \$3,900, as indicated by the analysis.
+
+Furthermore, the analysis demonstrates that if the vehicle accumulates an additional 100,000 miles, its estimated market value could align with the original purchase price.
+
+These insights provide valuable information for decision-making regarding the sale and future use of the vehicle, highlighting the significance of mileage as a key factor influencing its market value.
+:::
+
+::: {#Hypothesis .tab}
+## Hypothesis
+
+$$
+H_0: \beta_1 = 0 \\
+H_a: \beta_1 \neq 0 \\
+\alpha = 0.05
+$$
+
+### Null Hypothesis ($H_0$):
+
+The mileage of a vehicle at purchase does not significantly affect its selling price.
+
+### Alternative Hypothesis ($H_a$):
+
+The mileage of a vehicle at purchase significantly affects its selling price.
+
+To test this hypothesis, we have performed a linear regression analysis on the data.
+
+*My vehicle:* Toyota Corolla 2010 LE
+
+*Mileage at purchase:* 55,000
+
+*Price of Purchase:* \$7,500
+
+```{r, warning=FALSE}
+
+c.lm <- lm(Price ~ Milage, data = mycar)
+
+ggplot(data = mycar, aes(x = Milage, y = Price)) +
+  geom_point() +    
+  labs(title = "Toyota Corolla 2010 LE on Cars.com",
+       x = "Milage",
+       y = "Price") +
+  geom_smooth(method = "lm", formula = y ~ x, se = FALSE) +
+  theme_minimal() +
+  scale_x_continuous(labels = scales::comma)
+
+pander(summary(c.lm))
+
+```
+:::
+
+::: {#ModelSummary .tab}
+## Model Summary
+
+$$
+  \underbrace{Y_i}_\text{Price} = \beta_0 + \beta_1*Mileage 
+$$
+
+The linear regression model is represented as: Price \~ Mileage.
+
+The response variable (dependent variable) is "Price," and the predictor variable (independent variable) is "Mileage" (mileage of the vehicle at purchase).
+
+### Model Coefficients
+
+**Intercept (Estimated Coefficient):**
+
+The estimated intercept (intercept at Mileage = 0) is approximately \$14,090. This represents the estimated price of a vehicle when its mileage is zero. However, this value may not be practically meaningful because it's unlikely for a vehicle to have zero mileage because finding a brand new 2010 car in 2023 is rare.
+
+**Mileage (Estimated Coefficient):**
+
+The estimated coefficient for "Mileage" is approximately -0.03531. This coefficient represents the change in the price of the vehicle for a one-unit change in mileage. In this case, it indicates that for every one-mile increase in mileage, the vehicle's price is estimated to decrease by approximately \$0.03531.
+
+$$
+  \underbrace{\hat{Y}_i}_\text{Mean Price} = 14,090 -0.0531 \underbrace{X_i}_\text{Mileage}
+$$
+
+**Statistical Significance:**
+
+The p-value associated with the "Mileage" coefficient is \<2e-16, which is extremely small. This indicates that the "Mileage" variable is highly statistically significant in predicting the vehicle's price.
+
+The intercept also has an extremely small p-value, indicating that it is statistically significant.
+
+The "Signif. codes" section provides information about the level of significance, where '\*\*\*' indicates high significance.
+
+**Model Fit:**
+
+The multiple R-squared value (R-squared) is approximately 0.6506. This indicates that approximately 65.06% of the variability in the vehicle's price can be explained by the linear relationship with mileage. In other words, the model accounts for 65.06% of the variance in the price.
+
+The adjusted R-squared value (Adjusted R-squared) is approximately 0.646. This adjusted value takes into account the number of predictors in the model and is slightly lower than the R-squared value.
+
+**Residuals:**
+
+The residuals (differences between observed and predicted values) have a mean of approximately 0, indicating that, on average, the model is unbiased.
+
+The residual standard error is approximately 1385, representing the size of errors in predicting the vehicle's price.
+
+**F-statistic:**
+
+The F-statistic tests whether the regression model as a whole is statistically significant. In this case, the F-statistic is 143.4, with a very small p-value (\< 2.2e-16), indicating that the model is statistically significant as a whole.
+:::
+
+::: {#Interpretation .tab}
+## Interpretation
+
+**Based on the analysis:**
+
+The hypothesis testing indicates that there is a statistically significant relationship between the mileage of a vehicle at purchase and its selling price.
+
+The negative coefficient for "Mileage" suggests that, on average, as the mileage of a vehicle increases, its price tends to decrease.
+
+The model accounts for a significant portion of the variability in the vehicle's price, as indicated by the high R-squared value.
+
+It's important to note that while the model shows statistical significance, other factors not included in the model may also influence the price of a vehicle.
+
+Overall, you can conclude that mileage is an important predictor of the selling price of a vehicle, and as mileage increases, the price tends to decrease.
+
+```{r, warning=FALSE}
+
+log.lm <- lm(log(Price) ~ Milage, data = mycar)
+sqrt.lm <- lm(sqrt(Price) ~ Milage, data = mycar)
+inv.lm <- lm(1/Price ~ Milage, data = mycar)
+y.lm <- lm(Price ~ Milage, data = mycar)
+y2.lm <- lm(Price^2 ~ Milage, data = mycar)
+sqrt.sqrt.lm <- lm(sqrt(sqrt(Price)) ~ Milage, data = mycar)
+
+
+bl <- coef(log.lm)
+bs <- coef(sqrt.lm)
+bI <- coef(inv.lm)
+b <- coef(y.lm)
+b2 <- coef(y2.lm)
+bss <- coef(sqrt.sqrt.lm)
+
+
+ggplot(mycar, aes(x = Milage, y = Price)) +
+  geom_point(color = "orangered") +
+  stat_function(fun = function(x) exp(bl[1] + bl[2]*x), aes(color = "log(y)")) + #Best fit
+  stat_function(fun = function(x) (bs[1] + bs[2]*x)^2, aes(color = "sqrt(y)")) +
+  stat_function(fun = function(x) 1/(bI[1] + bI[2]*x), aes(color = "1/y")) +
+  stat_function(fun = function(x) b[1] + b[2]*x, aes(color = "y")) +
+  stat_function(fun = function(x) (bss[1] + bss[2]*x)^4, aes(color = "sqrt(sqrt(y))")) +
+  labs(title = "Scatterplot with Different Transformations (mycar dataset)",
+       x = "Milage",
+       y = "Price") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::comma)
+
+```
+
+### Testing Different Y Transformations
+
+In the analysis, we applied various Y transformations to the response variable ("Price") and examined how well each transformation improved the fit of the linear regression model to the data. These transformations included:
+
+**Log Transformation** (log(y)): Transformed the response variable by taking the natural logarithm of "Price" using the formula **`log(Price) ~ Mileage`**.
+
+**Squirt Transformation** (sqrt(y)): Transformed the response variable by taking the square root of "Price" using the formula **`sqrt(Price) ~ Mileage`**.
+
+**Inverse Transformation** (1/y): Transformed the response variable by taking the inverse of "Price" using the formula **`1/Price ~ Mileage`**.
+
+**No Transformation** (y): Used the original "Price" as-is without any transformation using the formula **`Price ~ Milage`**.
+
+**Squared Transformation** (y\^2): Transformed the response variable by squaring "Price" using the formula **`Price^2 ~ Milage`**.
+
+**Squirt Squirt Transformation** (sqrt(sqrt(y))): Transformed the response variable by taking the square root of the square root of "Price" using the formula **`sqrt(sqrt(Price)) ~ Milage`**.
+
+### Choosing the Best Transformation
+
+To determine which transformation best fits the data, will consider 3 factors, including:
+
+**Visual Fit**: Created a scatterplot with each transformation to visually assess how well the transformed data points align with the linear model.
+
+**Log Transformation as the Best Fit**:
+
+After testing different transformations, we determined that the log transformation (**`log(Price) ~ Mileage`**) provided the best fit to the data.
+
+**Box-Cox Transformation**:
+
+```{r, warning=FALSE}
+boxcox_results <- boxcox(c.lm)
+lambda_optimal <- boxcox_results$x[which.max(boxcox_results$y)]
+pander(cat("Optimal Lambda:", lambda_optimal))
+```
+
+The optimal lambda value of 0.06060606 suggests that the log transformation (lambda = 0) is appropriate. When lambda is close to zero, it indicates that using logarithm is a suitable transformation.
+
+```{r, warning=FALSE}
+starting_price <- 7500
+
+starting_mileage <- (log(starting_price) - bl[1]) / bl[2]
+
+individual_point <- data.frame(Milage = 55000, Price = 7500)
+prediction_milage <- data.frame(Milage = 85000)
+prediction_car <- predict(c.lm, newdata = prediction_milage)
+prediction_point <- data.frame(Milage = 85000, Price = prediction_car)
+
+combined_individual_points <- rbind(individual_point, prediction_point, data.frame(Milage = starting_mileage, Price = starting_price))
+
+ggplot(mycar, aes(x = Milage, y = Price)) +
+  geom_point(color = "grey") +
+  stat_function(fun = function(x) exp(bl[1] + bl[2] * x), aes(color = "log(y)")) + 
+  geom_point(data = combined_individual_points, aes(x = Milage, y = Price, color = c("blue4", "red", "green4")), size = c(3, 3, 3)) + 
+  geom_text(data = combined_individual_points, aes(x = Milage, y = Price, label = paste("Mileage:", round(Milage, 0), "\nPrice:", round(Price, 0))), color = c("blue4", "red", "green4"), vjust = c(1.5, 1.5, -0.5), hjust = c(0, 0, -0.1)) + 
+  labs(title = "Calculated Points for My Car",
+       x = "Mileage",
+       y = "Price") +
+  theme_bw() +
+  scale_color_manual(name = "Y Transformation", values = c("log(y)" = "blue"))
+
+```
+
+*In this visual representation, we highlight three key points of interest:*
+
+**Blue:** This represents the moment of my vehicle's initial purchase, where I acquired the car.
+
+**Red:** This signifies the projected current market value of my car at its present mileage. We've calculated this value using a logarithmic transformation of the price.
+
+**Yellow:** This point denotes the specific mileage threshold at which I could potentially resell my vehicle for the same price at which I originally purchased it.
+
+*This analysis unveils these intriguing insights:*
+
+-   Theoretically, I could currently sell my car at its current mileage and potentially realize a profit of approximately \$3,900.
+
+-   Even with an additional 100,000 miles on the odometer, my car's estimated market value could align with its original purchase price.
+
+All things considered, I find myself in a favorable position with respect to my vehicle.
+:::
